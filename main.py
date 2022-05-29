@@ -1,6 +1,10 @@
 import wx
 import wx.xrc
 
+Graph1 = []
+Code1 = -1
+
+
 class MApp(wx.App):
     def OnInit(self):
         self.frame = Frame1(None)
@@ -17,24 +21,24 @@ class Frame1(wx.Frame):
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT))
         myGridSizer = wx.GridSizer(0, 2, 0, 0)
 
-        self.CodeLabel = wx.StaticText(self, wx.ID_ANY, u"Код Прюфера", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.CodeLabel = wx.StaticText(self, wx.ID_ANY, u"Код Прюфера", size=(300, -1))
         self.CodeLabel.Wrap(-1)
         myGridSizer.Add(self.CodeLabel, 0, wx.ALL, 5)
 
-        self.CodeText = wx.TextCtrl(self, wx.ID_ANY, "123", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.CodeText = wx.TextCtrl(self, wx.ID_ANY, "", size=(300, -1))
         myGridSizer.Add(self.CodeText, 0, wx.ALL, 5)
 
         self.GraphLabel = wx.StaticText(self, wx.ID_ANY, u"Граф", wx.DefaultPosition, wx.DefaultSize, 0)
         self.GraphLabel.Wrap(-1)
         myGridSizer.Add(self.GraphLabel, 0, wx.ALL, 5)
 
-        self.GraphText = wx.TextCtrl(self, wx.ID_ANY, "yes")
+        self.GraphText = wx.TextCtrl(self, wx.ID_ANY, "", size=(300, -1))
         myGridSizer.Add(self.GraphText, 0, wx.ALL, 5)
 
-        self.GetBtn = wx.Button(self, wx.ID_ANY, u"Get", wx.Point(-1, -1), wx.DefaultSize, 0)
+        self.GetBtn = wx.Button(self, wx.ID_ANY, u"Закондировать дерево", wx.Point(-1, -1), wx.DefaultSize, 0)
         myGridSizer.Add(self.GetBtn, 0, wx.ALL, 5)
 
-        self.SetBtn = wx.Button(self, wx.ID_ANY, u"Set", wx.Point(-1, -1), wx.DefaultSize, 0)
+        self.SetBtn = wx.Button(self, wx.ID_ANY, u"Раскодировать дерево", wx.Point(-1, -1), wx.DefaultSize, 0)
         myGridSizer.Add(self.SetBtn, 0, wx.ALL, 5)
 
         self.SetSizer(myGridSizer)
@@ -43,21 +47,28 @@ class Frame1(wx.Frame):
 
         # Ввод
 
-        self.GetBtn.Bind(wx.EVT_BUTTON, self.getValues)
-        self.SetBtn.Bind(wx.EVT_BUTTON, self.setValues)
+        self.GetBtn.Bind(wx.EVT_BUTTON, self.CodeTree)
+        self.SetBtn.Bind(wx.EVT_BUTTON, self.DecodeTree)
 
-    def getValues(self, event):
-        Code1 = self.CodeText.Value
-        return Code1
+    def CodeTree(self, event):
+        Graph1 = self.GraphText.Value
+        g = Graph1.split()
+        for i in range(len(g)):
+            g[i] = g[i].split(",")
+            for j in range(len(g[i])):
+                g[i][j] = int(g[i][j])
+        print(g)
+        a = prufer_code(g)
+        a = [a[i] + 1 for i in range(len(a))]
+        a = str(a)
+        self.CodeText.Value = a
 
-    def setValues(self, event):
-        code = 1
-        g = []
-
-        if code:
-            self.CodeText.Value = str(code)
-        if g:
-            self.GraphText.Value = str(*g)
+    def DecodeTree(self, event):
+        code = self.CodeText.Value
+        code, n = code.split(";")[0], int(code.split(";")[1])
+        a_c = [int(el) for el in code.split()]
+        k = str(prufer_decode(a_c, n))
+        self.GraphText.Value = k
 
 
 def dfs(v):
@@ -69,8 +80,8 @@ def dfs(v):
             dfs(to)
 
 
-def prufer_code():
-    global parent, g, degree
+def prufer_code(g):
+    global parent, degree
     result = []
     parent[n - 1] = -1
     dfs(n - 1)
@@ -122,15 +133,18 @@ def prufer_decode(code, m):
 
     # 1 4, 5 7, 2 5, 6 8, 6 9, 2 6, 1 2, 3 1, 3 10
 
+# 3,1,2 0,4,5 0,9 0 1,6 1,7,8 4 5 5 2 ========== Дерево
+# 1 5 2 6 6 2 1 3;10 ======== Код
+# g = [[1, 2, 4], [0], [0], [4], [0, 3]]
+g = [[3, 1, 2], [0, 4, 5], [0, 9], [0], [1, 6], [1, 7, 8], [4], [5], [5], [2]]
 
-# g = [[3, 1, 2], [0, 4, 5], [0, 9], [0], [1, 6], [1, 7, 8], [4], [5], [5], [2]]
-g = [[1, 2, 4], [0], [0], [4], [0, 3]]
+
 
 parent = [-1 for i in range(len(g))]
 degree = [-1 for i in range(len(g))]
 n = len(g)
 
-a = prufer_code()
+a = prufer_code(g)
 a = [a[i] + 1 for i in range(len(a))]
 b = prufer_decode(a, n)
 print("Код Прюфера: ", *a)
