@@ -1,9 +1,6 @@
 import wx
 import wx.xrc
 
-Graph1 = []
-Code1 = -1
-
 
 class MApp(wx.App):
     def OnInit(self):
@@ -80,28 +77,28 @@ def dfs(v):
             dfs(to)
 
 
-def prufer_code(g):
-    global parent, degree
+def prufer_code(g):  # Асимптотика O(n)
+    global parent, connections, n
     result = []
     parent[n - 1] = -1
     dfs(n - 1)
-    ptr = -1
+    node = -1
     for i in range(n):
         degree[i] = len(g[i])
-        if degree[i] == 1 and ptr == -1:
-            ptr = i
-    leaf = ptr
+        if degree[i] == 1 and node == -1:
+            node = i
+    leaf = node
     for it in range(n - 2):
-        next = parent[leaf]
-        result.append(next)
-        degree[next] = degree[next] - 1
-        if degree[next] == 1 and next < ptr:
-            leaf = next
+        current_parent = parent[leaf]
+        result.append(current_parent)
+        degree[current_parent] = degree[current_parent] - 1
+        if degree[current_parent] == 1 and current_parent < node:
+            leaf = current_parent
         else:
-            ptr += 1
-            while ptr < n and degree[ptr] != 1:
-                ptr += 1
-            leaf = ptr
+            node += 1
+            while node < n and degree[node] != 1:
+                node += 1
+            leaf = node
     return result
 
 
@@ -131,16 +128,15 @@ def prufer_decode(code, m):
     out.append(add)
     return out
 
+
 # 1 4, 5 7, 2 5, 6 8, 6 9, 2 6, 1 2, 3 1, 3 10
 # 3,1,2 0,4,5 0,9 0 1,6 1,7,8 4 5 5 2 ========== Дерево
 # 1 5 2 6 6 2 1 3;10 ======== Код
 # g = [[1, 2, 4], [0], [0], [4], [0, 3]]
 g = [[3, 1, 2], [0, 4, 5], [0, 9], [0], [1, 6], [1, 7, 8], [4], [5], [5], [2]]
 
-
-
 parent = [-1 for i in range(len(g))]
-degree = [-1 for i in range(len(g))]
+connections = [-1 for i in range(len(g))]
 n = len(g)
 
 a = prufer_code(g)
